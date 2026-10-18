@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<script>(function(){var t;try{t=localStorage.getItem("theme")}catch(e){}if(t!=="light"&&t!=="dark")t=matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light";document.documentElement.setAttribute("data-theme",t)})()</script>
+<title>Estate Dashboard v16</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root{--bg:#f5f5f7;--card:#fff;--ink:#1d1d1f;--mute:#515154;--line:rgba(0,0,0,.1);--shadow:0 6px 24px rgba(0,0,0,.06);--blue:#007AFF;--pink:#FF2D55;--purple:#AF52DE;--green:#34C759;--sum:#C2410C}
+:root[data-theme=dark]{color-scheme:dark;--sum:#E8590C;--bg:#000;--card:#1c1c1e;--ink:#f5f5f7;--mute:#b0b0b5;--line:rgba(255,255,255,.14);--shadow:none}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-size:18px;line-height:1.5;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Tahoma,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+header{flex-wrap:wrap;position:sticky;top:0;z-index:5;padding:12px 24px;display:flex;justify-content:space-between;align-items:center;gap:12px;backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);background:color-mix(in srgb,var(--bg) 75%,transparent);border-bottom:1px solid var(--line);font-weight:700;font-size:20px}
+.hr{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.lang{display:flex;gap:4px;background:var(--card);padding:4px;border-radius:14px;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.lang button{font:inherit;font-size:16px;font-weight:600;min-height:44px;min-width:52px;border:0;border-radius:10px;background:transparent;color:var(--ink);cursor:pointer;padding:4px 12px}
+.lang button[aria-pressed=true]{background:var(--blue);color:#fff}
+.lang button:focus-visible,.seg button:focus-visible{outline:3px solid var(--blue)}
+.wrap{max-width:1100px;margin:auto;padding:24px}
+.card{background:var(--card);border-radius:28px;padding:30px;box-shadow:var(--shadow);margin-bottom:24px}
+h2{font-size:28px;letter-spacing:-.02em;margin:0 0 6px}
+.sub{color:var(--mute);margin:0 0 20px;font-size:17px}
+.hero{display:block}
+.big{font-size:76px;font-weight:700;letter-spacing:-.04em;line-height:1}
+.unit{font-size:30px;color:var(--mute);font-weight:600;margin-inline-start:6px}
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+.chip{background:var(--bg);border-radius:99px;padding:10px 16px;font-size:16px}
+.heirs{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-bottom:24px}
+.heir{background:var(--card);border-radius:28px;padding:30px 20px;box-shadow:var(--shadow);display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px}
+.ring{position:relative;width:140px;height:140px}
+.ring svg{transform:rotate(-90deg)}
+.ring span{position:absolute;inset:0;display:grid;place-items:center;font-weight:700;font-size:30px}
+.heir h3{margin:0;font-size:26px}
+.heir .role{color:var(--mute);font-size:17px}
+.legend div{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.legend div:last-child{border:0}
+.dot{width:16px;height:16px;border-radius:50%;flex:none}
+.legend b{margin-inline-start:auto;font-size:22px}
+.fit{width:100%;overflow:hidden;position:relative;direction:ltr}
+.tree{--lc:#8e8e93;direction:ltr;display:flex;flex-direction:column;align-items:center;width:max-content;transform-origin:top left}
+.node{border-radius:18px;padding:12px 20px;color:#fff;font-weight:700;text-align:center;line-height:1.3;font-size:18px}
+.node small{display:block;font-weight:500;font-size:15px}
+.kids{display:flex;justify-content:center}
+.kids.sub{margin-top:22px;position:relative}
+.kids.sub::before{content:"";position:absolute;top:-22px;left:50%;width:3px;height:22px;background:var(--lc);transform:translateX(-1.5px)}
+.kid{position:relative;padding:22px 7px 0;display:flex;flex-direction:column;align-items:center}
+.kid::before{content:"";position:absolute;top:0;left:50%;width:3px;height:22px;background:var(--lc);transform:translateX(-1.5px)}
+.kid::after{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--lc)}
+.kid:first-child::after{left:50%}.kid:last-child::after{right:50%}.kid:only-child::after{display:none}
+.pn{color:var(--c);border:3px solid var(--c);background:color-mix(in srgb,var(--c) 14%,var(--card));border-radius:14px;padding:8px;text-align:center;min-width:92px;font-weight:700;font-size:16px;line-height:1.3}
+.pn b{display:block;color:var(--c)}
+.pn small{display:block;font-weight:500;font-size:13px;color:var(--mute)}
+.calc{margin-top:18px;font-weight:700;font-size:18px;text-align:center;max-width:520px}
+.seg{display:flex;gap:8px;background:var(--bg);padding:6px;border-radius:18px;margin-bottom:18px}
+.seg button{flex:1;font:inherit;font-size:18px;font-weight:600;min-height:56px;border:0;border-radius:13px;background:transparent;color:var(--ink);cursor:pointer;padding:6px 10px}
+.seg button[aria-pressed=true]{background:var(--card);box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.total2{font-size:34px;font-weight:700;letter-spacing:-.02em;margin:0 0 12px}
+.ch{height:380px}
+.heroTop{display:grid;grid-template-columns:1fr 240px;gap:28px;align-items:center}
+.pie{height:240px}
+.plist{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px;margin-top:24px}
+.plist button{font:inherit;color:inherit;text-align:start;width:100%;display:flex;align-items:center;gap:10px;padding:9px 14px;background:var(--bg);border:2px solid transparent;border-radius:14px;font-size:15px;cursor:pointer;transition:background .15s}
+.plist button:hover{background:color-mix(in srgb,var(--ink) 9%,var(--bg))}
+.plist button.sel{border-color:var(--ink);background:var(--card)}
+.plist button:focus-visible,.clear:focus-visible{outline:3px solid var(--blue)}
+.lpanel{margin-top:22px;background:var(--bg);border-radius:20px;padding:18px 22px}
+.lpanel .hint{margin:0;color:var(--mute);font-size:16px}
+.lhead{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:14px}
+.lname{font-size:26px;font-weight:700;letter-spacing:-.02em;vertical-align:middle}
+.dot.big{width:18px;height:18px;display:inline-block;margin-inline-end:10px;vertical-align:middle}
+.lsub{color:var(--mute);font-size:16px;margin-top:2px}
+.clear{font:inherit;font-size:15px;font-weight:600;min-height:44px;padding:4px 18px;border-radius:12px;border:2px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+.lbody{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.bar2{display:flex;height:14px;border-radius:99px;overflow:hidden;margin-bottom:8px}
+.lr{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:16px}
+.lr:last-child{border:0}
+.lr b{margin-inline-start:auto;white-space:nowrap}
+.lt{font-weight:700;font-size:16px;margin-bottom:4px}
+.plist b{margin-inline-start:auto;white-space:nowrap}
+.sumchip{display:inline-block;background:var(--sum);color:#fff;border-radius:99px;padding:1px 12px;font-weight:700;line-height:1.5}
+.sumchip.g{background:#1f9d45}
+.node.g{background:color-mix(in srgb,var(--c) 14%,var(--card));color:var(--c);border:3px solid var(--c)}
+.node.g small{color:var(--c)}
+.vt{--lc:#8e8e93;display:none}
+.vt .node{text-align:start;font-size:17px}
+.v{margin-inline-start:18px;padding-inline-start:18px;border-inline-start:3px solid var(--lc)}
+.vi{position:relative;margin-top:14px}
+.vi::before{content:"";position:absolute;inset-inline-start:-21px;top:26px;width:18px;height:3px;background:var(--lc)}
+.vrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.vt .calc{text-align:start;max-width:none;margin-top:12px;font-size:17px}
+.note{color:var(--mute);font-size:15px;text-align:center;padding:10px 0 30px}
+@media(max-width:760px){#fit{display:none}.vt{display:block}}
+@media(max-width:900px){.heroTop,.heirs{grid-template-columns:1fr}.pie{height:230px}.lbody{grid-template-columns:1fr}.big{font-size:54px}}
+@media(max-width:520px){.wrap{padding:14px}.card{padding:22px}.seg button{font-size:16px}header{padding:10px 14px;font-size:17px}.lang button{min-width:44px;padding:4px 8px}}
+</style>
+</head>
+<body>
+<header><span id="ttl"></span>
+<div class="hr"><div class="lang" role="group" aria-label="Theme"><button data-t="light">☀️</button><button data-t="dark">🌙</button></div>
+<div class="lang" role="group" aria-label="Language"><button data-l="en">EN</button><button data-l="fr">FR</button><button data-l="ar">العربية</button></div></div></header>
+<div class="wrap">
+
+<div class="card hero">
+  <div class="heroTop">
+    <div>
+      <div class="big"><span id="tot"></span><span class="unit" id="unit"></span></div>
+      <p class="sub" style="margin-top:10px" id="across"></p>
+      <div class="chips" id="chips"></div>
+    </div>
+    <div class="pie"><canvas id="pie"></canvas></div>
+  </div>
+  <div class="lpanel" id="lpanel"></div>
+  <div class="plist" id="plist"></div>
+</div>
+
+<div class="heirs" id="heirs"></div>
+
+<div class="card">
+  <h2 data-i="treeT"></h2>
+  <p class="sub" data-i="treeS"></p>
+  <div class="fit" id="fit"><div class="tree" id="tree"></div></div>
+  <div class="vt" id="treeV"></div>
+</div>
+
+<div class="card">
+  <h2 data-i="twoT"></h2>
+  <p class="sub" data-i="twoS"></p>
+  <div style="display:grid;grid-template-columns:170px 1fr;gap:24px;align-items:center">
+    <div style="height:170px"><canvas id="split"></canvas></div>
+    <div class="legend" id="legend"></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2 data-i="landsT"></h2>
+  <p class="sub" data-i="landsS"></p>
+  <div class="ch"><canvas id="lands"></canvas></div>
+</div>
+
+<div class="card">
+  <h2 data-i="heirT"></h2>
+  <p class="sub" data-i="heirS"></p>
+  <div class="seg" id="seg" role="group"></div>
+  <p class="total2" id="htotal"></p>
+  <div class="ch"><canvas id="heirChart"></canvas></div>
+</div>
+
+<div class="note" data-i="note"></div>
+</div>
+
+<script>
+// name, total, Abdelkader branch, Abdelmajid branch, son, daughter, granddaughter (m²)
+const L=[['Loutawa',72310.77,40080.00142,32230.86981,8714.38783,4357.19391,865.256212],['Jboub 1',46533,25792.046,20741.01914,5607.83143,2803.91571,556.804571],['Khalouta',43870,24316.01354,19554.04788,5286.90531,2643.45266,524.939646],['Lbhirate',30226,16753.49499,13472.54732,3642.62594,1821.31297,361.678271],['Jnane Nini',21000,11639.7603,9360.2691,2530.773,1265.3865,251.2818],['Shouba 3',20000,11085.486,8914.542,2410.26,1205.13,239.316],['Nassniss',18000,9976.9374,8023.0878,2169.234,1084.617,215.3844],['Jboub 2',17672,9795.13543,7876.889311,2129.70574,1064.85287,211.459618],['Shouba 2',10621,5886.94734,4734.067529,1279.96857,639.984287,127.088762],['Rgab',10000,5542.743,4457.271,1205.13,602.565,119.658],['Laqliaa',8589,4760.661963,3828.350062,1035.08616,517.543079,102.774256],['Shouba 1',7914,4386.52681,3527.484269,953.739882,476.869941,94.6973412],['Talja (1+2)',7000,3879.9201,3120.0897,843.591,421.7955,83.7606],['Bir Ahmed',6735,3733.037411,3001.972019,811.655055,405.827528,80.589663],['Talea Harbil',6687,3706.432244,2980.577118,805.870431,402.935216,80.0153046],['Almars Hayt',3256,1804.717121,1451.287438,392.390328,196.195164,38.9606448],['Jboub 3',2779,1540.32828,1238.675611,334.905627,167.452814,33.2529582],['Hamri',855,473.9045265,381.0966705,103.038615,51.5193075,10.230759]];
+
+const I={
+en:{dir:'ltr',loc:'en-US',name:'Estate Dashboard',across:k=>`Total estate across ${k} lands`,largest:'Largest',smallest:'Smallest',roles:['Son','Daughter','Granddaughter'],names:['Abdelkader','Fatima','Sanaa'],ex:x=>`for example ${x}`,treeT:'How the whole estate is shared',treeS:'Follow the lines from the top. The Abdelkader branch is shared by 7 heirs, and the rest goes to the Abdelmajid branch.',whole:'Whole estate',brA:'Abdelkader branch',brB:'Abdelmajid branch',grp:['3 sons','3 daughters','1 granddaughter'],left:'Everything that is left',twoT:'Two family branches',twoS:'Share of the whole estate',landsT:'All Lands Overview',landsS:'Each bar is split between the two branches. Hover or tap a bar for exact figures.',total:'Total',heirT:'Heir View',heirS:'Choose Son, Daughter or Granddaughter to see what one of them receives from each land.',inTotal:'in total',note:'A fictional inheritance story. All figures are calculated from the land table.',other:k=>`Other ${k} lands`,light:'Light mode',dark:'Dark mode',pick:'Tap a land in the chart or the list to see how it is shared.',reset:'Close',eachT:'What one heir receives',ofEst:'of the estate',u:'m²',a:'Abdelkader',b:'Abdelmajid'},
+fr:{dir:'ltr',loc:'fr-FR',name:'Tableau de bord du domaine',across:k=>`Domaine total sur ${k} terrains`,largest:'Plus grand',smallest:'Plus petit',roles:['Fils','Fille','Petite-fille'],names:['Abdelkader','Fatima','Sanaa'],ex:x=>`par exemple ${x}`,treeT:'Comment tout le domaine est partagé',treeS:'Suivez les lignes depuis le haut. La branche Abdelkader est partagée entre 7 héritiers, et le reste revient à la branche Abdelmajid.',whole:'Domaine entier',brA:'Branche Abdelkader',brB:'Branche Abdelmajid',grp:['3 fils','3 filles','1 petite-fille'],left:'Tout le reste',twoT:'Deux branches de la famille',twoS:'Part du domaine entier',landsT:'Vue d’ensemble des terrains',landsS:'Chaque barre est répartie entre les deux branches. Survolez ou touchez une barre pour voir les chiffres exacts.',total:'Total',heirT:'Vue par héritier',heirS:'Choisissez Fils, Fille ou Petite-fille pour voir ce que l’un d’eux reçoit de chaque terrain.',inTotal:'au total',note:'Une histoire d’héritage fictive. Tous les chiffres sont calculés à partir du tableau des terrains.',other:k=>`Autres ${k} terrains`,light:'Mode clair',dark:'Mode sombre',pick:'Touchez un terrain dans le graphique ou la liste pour voir comment il est partagé.',reset:'Fermer',eachT:'Ce que reçoit chaque héritier',ofEst:'du domaine',u:'m²',a:'Abdelkader',b:'Abdelmajid'},
+ar:{dir:'rtl',loc:'en-US',name:'لوحة معلومات التركة',across:k=>`إجمالي التركة على ${k} قطعة أرضية`,largest:'الأكبر',smallest:'الأصغر',roles:['ابن','بنت','حفيدة'],names:['عبد القادر','فاطمة','سناء'],ex:x=>`مثلاً ${x}`,treeT:'كيف تُقسَّم التركة كاملة',treeS:'تابع الخطوط من الأعلى. يتقاسم 7 ورثة حصة فرع عبد القادر، والباقي يذهب إلى فرع عبد المجيد.',whole:'كامل التركة',brA:'فرع عبد القادر',brB:'فرع عبد المجيد',grp:['3 أبناء','3 بنات','حفيدة واحدة'],left:'كل ما تبقّى',twoT:'فرعا العائلة',twoS:'حصة كل فرع من التركة كاملة',landsT:'نظرة عامة على جميع القطع',landsS:'كل عمود مقسّم بين الفرعين. مرّر المؤشر أو المس العمود لرؤية الأرقام الدقيقة.',total:'المجموع',heirT:'عرض حسب الوارث',heirS:'اختر ابن أو بنت أو حفيدة لترى ما يحصل عليه من كل قطعة.',inTotal:'في المجموع',note:'قصة ميراث خيالية. جميع الأرقام محسوبة من جدول القطع.',other:k=>`${k} قطعة أخرى`,light:'الوضع الفاتح',dark:'الوضع الداكن',pick:'المس قطعة في الرسم أو في القائمة لترى كيف تُقسَّم.',reset:'إغلاق',eachT:'ما يحصل عليه كل وارث',ofEst:'من التركة',u:'م²',a:'عبد القادر',b:'عبد المجيد'}
+};
+const C={blue:'#007AFF',pink:'#FF2D55',purple:'#AF52DE',green:'#34C759'};
+const $=id=>document.getElementById(id);
+let lang='en';try{lang=localStorage.getItem('lang')||'en'}catch(e){}
+if(!I[lang])lang='en';
+const sum=i=>L.reduce((s,r)=>s+r[i],0);
+const T=sum(1),A=sum(2),B=sum(3);
+const heirs=[{i:4,c:C.blue,cnt:3},{i:5,c:C.pink,cnt:3},{i:6,c:C.purple,cnt:1}];
+heirs.forEach(h=>h.m2=sum(h.i));
+let cur=0,sel=-1,charts=[];
+
+// number helpers (follow the chosen language)
+const n=(v,d)=>Number(v).toLocaleString(I[lang].loc,{minimumFractionDigits:d||0,maximumFractionDigits:d||0});
+const f=(v,d)=>Number(v).toLocaleString(I[lang].loc,{maximumFractionDigits:d||0});
+const P=(x,d)=>n(x,d==null?2:d)+(lang==='fr'?'\u00a0%':'%');
+const pc=(v,d)=>P(v/T*100,d);
+
+
+const tip={backgroundColor:'rgba(29,29,31,.94)',borderColor:'rgba(255,255,255,.22)',borderWidth:1,padding:{x:16,y:13},cornerRadius:14,caretSize:0,boxPadding:6,usePointStyle:true,titleFont:{size:16,weight:'600'},titleMarginBottom:8,bodyFont:{size:15},bodySpacing:6};
+let theme=document.documentElement.getAttribute('data-theme')||'light';Chart.defaults.color=theme==='dark'?'#a1a1a6':'#6e6e73';function applyTheme(t){theme=t;document.documentElement.setAttribute('data-theme',t);try{localStorage.setItem('theme',t)}catch(e){}Chart.defaults.color=t==='dark'?'#a1a1a6':'#6e6e73'}
+Chart.defaults.font.size=14;Chart.defaults.font.family='-apple-system,BlinkMacSystemFont,"Segoe UI",Tahoma,sans-serif';
+const grid={color:'rgba(128,128,128,.18)'};
+
+const landColor=k=>`hsl(${(170+k*19)%360},62%,58%)`;
+const landColorA=(k,a)=>`hsla(${(170+k*19)%360},62%,58%,${a})`;
+const sliceColors=()=>L.map((r,k)=>sel<0||k===sel?landColor(k):landColorA(k,.28));
+function select(k){sel=(k===sel)?-1:k;paint()}
+function paint(){const ch=charts[0];
+if(ch){ch.data.datasets[0].backgroundColor=sliceColors();ch.data.datasets[0].offset=L.map((r,i)=>i===sel?16:0);ch.update()}
+document.querySelectorAll('#plist button').forEach((b,i)=>{b.classList.toggle('sel',i===sel);b.setAttribute('aria-pressed',i===sel)});
+renderPanel()}
+function renderPanel(){const d=I[lang],el=$('lpanel');
+if(sel<0){el.innerHTML=`<p class="hint">${d.pick}</p>`;return}
+const r=L[sel],t=r[1],a=r[2],b=r[3];
+const row=(c,n,v)=>`<div class="lr"><span class="dot" style="background:${c}"></span>${n}<b>${f(v,v<100?1:0)} ${d.u}</b></div>`;
+el.innerHTML=`<div class="lhead"><div><span class="dot big" style="background:${landColor(sel)}"></span><span class="lname">${r[0]}</span><div class="lsub">${f(t)} ${d.u} · ${pc(t)} ${d.ofEst}</div></div><button type="button" class="clear" id="lclose">${d.reset}</button></div>
+<div class="lbody"><div><div class="bar2"><i style="width:${a/t*100}%;background:${C.blue}"></i><i style="flex:1;background:${C.green}"></i></div>${row(C.blue,d.brA+' ('+P(a/t*100,1)+')',a)}${row(C.green,d.brB+' ('+P(b/t*100,1)+')',b)}</div>
+<div><div class="lt">${d.eachT}</div>${heirs.map((h,k)=>row(h.c,d.roles[k],r[h.i])).join('')}</div></div>`;
+$('lclose').onclick=()=>select(sel)}
+function pieItems(d){return L.map((r,k)=>({n:r[0],v:r[1],c:landColor(k)}))}
+function buildCharts(){
+const d=I[lang];charts.forEach(c=>c.destroy());charts=[];
+// donut: biggest lands, the rest grouped
+const PI=pieItems(d);
+charts.push(new Chart($('pie'),{type:'doughnut',data:{labels:PI.map(x=>x.n),datasets:[{data:PI.map(x=>x.v),backgroundColor:sliceColors(),offset:L.map((r,i)=>i===sel?16:0),borderWidth:0,borderRadius:6,spacing:2}]},options:{cutout:'64%',maintainAspectRatio:false,layout:{padding:14},onClick:(e,els)=>{if(els.length)select(els[0].index)},onHover:(e,els)=>{e.native.target.style.cursor=els.length?'pointer':'default'},plugins:{legend:{display:false},tooltip:{...tip,callbacks:{title:c=>c[0].label,label:c=>' '+f(c.raw)+' '+d.u+'  ·  '+pc(c.raw)+' '+d.ofEst}}}}}));
+// branch donut
+charts.push(new Chart($('split'),{type:'doughnut',data:{labels:[d.a,d.b],datasets:[{data:[A,B],backgroundColor:[C.blue,C.green],borderWidth:0,borderRadius:6}]},options:{cutout:'68%',maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...tip,callbacks:{title:()=>'',label:c=>' '+c.label+'   '+P(c.raw/T*100)+'  ·  '+f(c.raw)+' '+d.u}}}}}));
+// all lands overview
+charts.push(new Chart($('lands'),{type:'bar',data:{labels:L.map(r=>r[0]),datasets:[{label:d.a,data:L.map(r=>r[2]),backgroundColor:C.blue,borderRadius:4},{label:d.b,data:L.map(r=>r[3]),backgroundColor:C.green,borderRadius:4}]},options:{maintainAspectRatio:false,interaction:{mode:'index',intersect:false},scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,grid,ticks:{callback:v=>f(v/1000)+'k'},title:{display:true,text:d.u,font:{size:15}}}},plugins:{legend:{position:'bottom',labels:{usePointStyle:true,boxWidth:10,font:{size:16}}},tooltip:{...tip,footerFont:{size:14,weight:'400'},footerMarginTop:10,footerColor:'rgba(255,255,255,.65)',callbacks:{title:c=>c[0].label,label:c=>{const t=L[c.dataIndex][1];return ' '+c.dataset.label+'   '+P(c.raw/t*100,1)+'  ·  '+f(c.raw)+' '+d.u},footer:c=>d.total+'  '+f(L[c[0].dataIndex][1])+' '+d.u}}}}}));
+}
+
+function showHeir(k){cur=k;const d=I[lang],h=heirs[k];
+document.querySelectorAll('#seg button').forEach((b,j)=>b.setAttribute('aria-pressed',j===k));
+$('htotal').textContent=`${d.roles[k]}: ${f(h.m2)} ${d.u} ${d.inTotal}`;$('htotal').style.color=h.c;
+if(window.hc)window.hc.destroy();
+window.hc=new Chart($('heirChart'),{type:'bar',data:{labels:L.map(r=>r[0]),datasets:[{data:L.map(r=>r[h.i]),backgroundColor:h.c,borderRadius:5}]},options:{maintainAspectRatio:false,scales:{x:{grid:{display:false}},y:{grid,title:{display:true,text:d.u,font:{size:15}}}},plugins:{legend:{display:false},tooltip:{...tip,callbacks:{label:c=>' '+d.roles[k]+'   '+f(c.raw,1)+' '+d.u}}}}});}
+
+function fitTree(){const box=$('fit'),t=$('tree');if(!box.clientWidth)return;t.style.transform='none';t.style.marginLeft='0';
+const w=t.offsetWidth,sc=Math.min(1,box.clientWidth/w);
+t.style.transform='scale('+sc+')';t.style.marginLeft=Math.max(0,(box.clientWidth-w*sc)/2)+'px';box.style.height=(t.offsetHeight*sc)+'px'}
+
+function render(){
+const d=I[lang];
+document.documentElement.lang=lang;document.documentElement.dir=d.dir;document.title=d.name;$('ttl').textContent=d.name;
+document.querySelectorAll('[data-i]').forEach(e=>e.textContent=d[e.dataset.i]);
+document.querySelectorAll('.lang button[data-l]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.l===lang));
+document.querySelectorAll('.lang button[data-t]').forEach(b=>{b.setAttribute('aria-pressed',b.dataset.t===theme);b.title=d[b.dataset.t];b.setAttribute('aria-label',d[b.dataset.t])});
+// hero
+$('tot').textContent=f(T);$('unit').textContent=d.u;$('across').textContent=d.across(L.length);
+$('chips').innerHTML=`<span class="chip">${d.largest} <b>${L[0][0]} (${f(L[0][1])} ${d.u})</b></span><span class="chip">${d.smallest} <b>${L[L.length-1][0]} (${f(L[L.length-1][1])} ${d.u})</b></span>`;
+$('plist').innerHTML=pieItems(d).map(x=>`<button type="button" aria-pressed="false"><span class="dot" style="background:${x.c}"></span>${x.n}<b>${f(x.v)} ${d.u}</b></button>`).join('');
+// heir cards
+$('heirs').innerHTML=heirs.map((h,k)=>{const p=h.m2/T*100;return `<div class="heir"><div class="ring"><svg width="140" height="140" viewBox="0 0 100 100"><circle cx="50" cy="50" r="42" fill="none" stroke="${h.c}" stroke-opacity=".18" stroke-width="12"/><circle cx="50" cy="50" r="42" fill="none" stroke="${h.c}" stroke-width="12" stroke-linecap="round" stroke-dasharray="${p*2.639} 264"/></svg><span style="color:${h.c}">${P(p)}</span></div><div><h3>${d.roles[k]}</h3><div class="role">${d.ex(d.names[k])}</div></div></div>`}).join('');
+// tree (colour of each number follows its group; the sum has its own colour)
+const sumChip=`<span class="sumchip">${pc(A)}</span>`;
+const partsHtml=heirs.map(h=>`<span style="color:${h.c}">${P(h.cnt*h.m2/T*100)}</span>`).join(' + ');
+const calcA=`${partsHtml} = ${sumChip}`;
+const calcB=`${P(100,0)} − ${sumChip} = <span class="sumchip g">${pc(B)}</span><br><span style="font-weight:500;font-size:16px;color:var(--mute)">${d.left}</span>`;
+const gnode=(h,k)=>`<div class="node g" style="--c:${h.c}">${d.grp[k]}<small>${h.cnt} × ${pc(h.m2)} = <b>${P(h.cnt*h.m2/T*100)}</b></small></div>`;
+const pnode=(h,k)=>`<div class="pn" style="--c:${h.c}"><b>${d.roles[k]}</b>${pc(h.m2)}<small>${f(h.m2)} ${d.u}</small></div>`;
+const nA=`<div class="node" style="background:${C.blue}">${d.brA}<small>${sumChip} · ${f(A)} ${d.u}</small></div>`;
+const nB=`<div class="node" style="background:#1f9d45">${d.brB}<small>${pc(B)} · ${f(B)} ${d.u}</small></div>`;
+const nT=`<div class="node" style="background:#3a3a3c">${d.whole}<small>${P(100,0)} · ${f(T)} ${d.u}</small></div>`;
+$('tree').innerHTML=`${nT}<div class="kids sub">
+<div class="kid">${nA}<div class="kids sub">${heirs.map((h,k)=>`<div class="kid">${gnode(h,k)}<div class="kids sub">${Array.from({length:h.cnt},()=>`<div class="kid">${pnode(h,k)}</div>`).join('')}</div></div>`).join('')}</div>
+<div class="calc">${calcA}</div></div>
+<div class="kid">${nB}<div class="calc">${calcB}</div></div>
+</div>`;
+// vertical tree for narrow screens
+$('treeV').innerHTML=`${nT}<div class="v"><div class="vi">${nA}<div class="v">${heirs.map((h,k)=>`<div class="vi">${gnode(h,k)}<div class="vrow">${Array.from({length:h.cnt},()=>pnode(h,k)).join('')}</div></div>`).join('')}</div>
+<div class="calc">${calcA}</div></div>
+<div class="vi">${nB}<div class="calc">${calcB}</div></div></div>`;
+// branches legend
+$('legend').innerHTML=[[d.brA,A,C.blue],[d.brB,B,C.green]].map(x=>`<div><span class="dot" style="background:${x[2]}"></span><span>${x[0]}<br><small style="color:var(--mute)">${f(x[1])} ${d.u}</small></span><b>${pc(x[1])}</b></div>`).join('');
+// heir view buttons
+$('seg').innerHTML=d.roles.map(r=>`<button type="button" aria-pressed="false">${r}</button>`).join('');
+document.querySelectorAll('#seg button').forEach((b,k)=>b.onclick=()=>showHeir(k));
+buildCharts();showHeir(cur);fitTree();
+const pieChart=charts[0];
+document.querySelectorAll('#plist button').forEach((e,k)=>{
+const on=()=>{const a=[{datasetIndex:0,index:k}];pieChart.setActiveElements(a);pieChart.tooltip.setActiveElements(a,{x:0,y:0});pieChart.update()};
+const off=()=>{pieChart.setActiveElements([]);pieChart.tooltip.setActiveElements([],{x:0,y:0});pieChart.update()};
+e.onmouseenter=on;e.onmouseleave=off;e.onclick=()=>select(k)});
+paint();
+}
+
+document.querySelectorAll('.lang button[data-t]').forEach(b=>b.onclick=()=>{applyTheme(b.dataset.t);render()});
+document.querySelectorAll('.lang button[data-l]').forEach(b=>b.onclick=()=>{lang=b.dataset.l;try{localStorage.setItem('lang',lang)}catch(e){}render()});
+if(window.ResizeObserver)new ResizeObserver(fitTree).observe($('fit'));
+window.addEventListener('resize',fitTree);
+render();
+</script>
+</body>
+</html>
